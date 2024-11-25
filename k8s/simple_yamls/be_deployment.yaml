@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: be-app
+  name: backend-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: be-app
+      app: backend-app
   template:
     metadata:
       labels:
-        app: be-app
+        app: backend-app
     spec:
       containers:
-        - name: be-app
-          image: stress-api:latest
+        - name: backend-app
+          image: assafushy/stress-be:latest
           resources:
             requests:
               memory: "64Mi"

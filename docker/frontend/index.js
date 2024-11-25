@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 
-const PYTHON_API_URL = "http://localhost:5002"; // Python API base URL
+const PYTHON_API_URL = process.env.BACKEND_URI || "http://localhost:5002"; // Python API base URL
 
 // Serve the HTML UI
 app.get("/", (req, res) => {
@@ -57,4 +57,5 @@ app.get("/", (req, res) => {
 // Start the server
 app.listen(3000, () => {
   console.log("Web UI running on http://localhost:3000");
+  console.log("Backend API running on " + PYTHON_API_URL);
 });

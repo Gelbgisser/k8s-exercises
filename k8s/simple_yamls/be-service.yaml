@@ -5,10 +5,10 @@ metadata:
   namespace: default
 spec:
   selector:
-    app: be-svc
+    app: backend-app
   type: LoadBalancer
   ports:
     - name: be-svc
       protocol: TCP
-      port: 80
+      port: 5002
       targetPort: 5002

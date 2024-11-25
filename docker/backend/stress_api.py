@@ -3,7 +3,9 @@ from flask_cors import CORS  # Import CORS
 import subprocess
 import logging
 import sys
+import os
 
+port = int(os.getenv("API_PORT", 5002))
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes and origins
 
@@ -87,4 +89,7 @@ if __name__ == "__main__":
     # Check for stress utility before starting the app
     check_stress_util()
 
-    app.run(host="0.0.0.0", port=5002)
+    app.run(host="0.0.0.0", port=port)
+    
+
+

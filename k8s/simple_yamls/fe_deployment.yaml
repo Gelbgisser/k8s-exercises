@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend-app
-          image: stress-ui:latest
+          image: assafushy/stress-frontend:latest
           resources:
             requests:
               memory: "64Mi"
@@ -25,5 +25,5 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: API_BASE_URL
-              value: "http://python-api-service:5000" # Kubernetes service for the Python API
+            - name: BACKEND_URI
+              value: http://adb5980d71bb248f097ac938f68f3f2a-463864759.eu-west-1.elb.amazonaws.com:5002" # Kubernetes service for the Python API
