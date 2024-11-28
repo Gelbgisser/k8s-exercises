@@ -6,9 +6,8 @@ metadata:
 spec:
   selector:
     app: frontend-app
-  type: LoadBalancer
+  type: NodePort
   ports:
     - name: fe-svc
       protocol: TCP
-      port: 80
       targetPort: 3000
