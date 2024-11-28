@@ -6,16 +6,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: backend-app
+    name: backend
   minReplicas: 1
   maxReplicas: 5
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 30
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
+  targetCPUUtilizationPercentage: 50
