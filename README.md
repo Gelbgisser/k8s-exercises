@@ -111,10 +111,105 @@ Create the following Kubernetes manifests:
   - Set the minReplicas to 1
   - Set the maxReplicas to 5
   - Set the targetCPUUtilizationPercentage to 30
-  -
 
 ## Part 5: Deploying the application to Kubernetes using Helm
 
+### Step 1: Create a Helm Chart for the Backend Service
+
+1. Create a new directory for the backend Helm chart:
+
+```bash
+mkdir -p k8s/charts/backend
+cd k8s/charts/backend
+helm create backend
+// Remove the files in the templates directory.
+// Remove the values.yaml file.
+```
+
+2. Create a new values.yaml file in the backend chart with the following content:
+
+   - replicaCount to 1
+   - image.repository to <dockerhub-username>/stress-backend
+   - image.tag to latest
+   - image.pullPolicy to IfNotPresent
+   - service.type to LoadBalancer
+   - service.port to 5002
+   - resources.requests.memory to 64Mi
+   - resources.requests.cpu to 250m
+   - resources.limits.memory to 128Mi
+   - resources.limits.cpu to 500m
+   - env.API_PORT to 5002
+   - hpa.enabled to true
+   - hpa.minReplicas to 1
+   - hpa.maxReplicas to 5
+   - hpa.targetCPUUtilizationPercentage to 30
+
+3. Create a new deployment.yaml template in the backend chart. And make sure to adjust the following(you can start from your deployment.yaml file):
+
+   1. apiVersion to apps/v1
+   2. kind to Deployment
+   3. metadata.name to {{ .Release.Name }}
+   4. spec.replicas to {{ .Values.replicaCount }}
+   5. spec.template.spec.containers[0].image to "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+   6. spec.template.spec.containers[0].imagePullPolicy to {{ .Values.image.pullPolicy }}
+   7. spec.template.spec.containers[0].ports[0].containerPort to {{ .Values.service.port }}
+   8. spec.template.spec.containers[0].env to include the environment variables
+   9. spec.template.spec.containers[0].resources to include the resource requests/limits
+   10. spec.template.spec.containers[0].ports[0].containerPort to {{ .Values.service.port }}
+   11. spec.template.spec.containers[0].env to include the environment variables
+   12. spec.template.spec.containers[0].resources to include the resource requests/limits
+
+4. Update the service.yaml template in the backend chart to include the service configuration:
+   1. apiVersion to v1
+   2. kind to Service
+   3. metadata.name to {{ include "backend.fullname" . }}
+   4. metadata.labels to {{- include "backend.labels" . | nindent 4 }}
+   5. spec.selector to {{- include "backend.selectorLabels" . | nindent 6 }}
+   6. spec.ports[0].port to {{ .Values.service.port }}
+   7. spec.ports[0].targetPort to {{ .Values.service.port }}
+   8. spec.type to {{ .Values.service.type }}
+5. Update the hpa.yaml template in the backend chart to include the HPA configuration:
+   1. apiVersion to autoscaling/v2beta2
+   2. kind to HorizontalPodAutoscaler
+   3. metadata.name to {{ .Release.Name }}
+   4. spec.minReplicas to {{ .Values.hpa.minReplicas }}
+   5. spec.maxReplicas to {{ .Values.hpa.maxReplicas }}
+   6. spec.metrics[0].resource.target to {{ .Values.hpa.targetCPUUtilizationPercentage | int32 }}
+6. Repeat the same steps for the frontend service
+
 ## Part 6: Adding Ingress to the application
 
-## Part 7: Adding HPA to the application
+Now that you have deployed the application to Kubernetes, you need to expose it to the outside world using an Ingress resource.
+
+First install Nginx Ingress Controller on the cluster(Example in our slides).
+
+Create an Ingress resource that routes traffic to the frontend service.
+example:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stress-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: stress.example.com
+      http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: fe-svc
+              port:
+                number: 80
+```
+
+Update the hosts file on your machine to point the domain name to the external IP address of the Ingress Controller.
+
+```bash
+echo "<EXTERNAL-IP> stress.example.com" | sudo tee -a /etc/hosts
+
+```
